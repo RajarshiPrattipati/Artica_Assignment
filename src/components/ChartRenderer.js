@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { useCubeQuery } from "@cubejs-client/react";
 import { Spin, Row, Col, Statistic, Table } from "antd";
 import _ from "lodash";
+import {DateTime as dt} from "luxon";
 import {
   CartesianGrid,
   PieChart,
@@ -105,6 +106,14 @@ const TypeToChartComponent = {
           stroke={colors[1]}
           fill={colors[1]}
         />
+         <Area
+          key={"LineItems.expected"}
+          stackId="d"
+          dataKey={"LineItems.expected"}
+          name={"Expected"}
+          stroke={colors[3]}
+          fill={colors[3]}
+        />
     </CartesianChart>
   ),
   pie: ({ resultSet, height }) => (
@@ -168,6 +177,42 @@ const Spinner = () => (
 )
 
 
+// const generateSeries = (series, variant, args) => {
+//   switch (variant)
+//   {
+//     case 'auto-scale' :
+//       {
+//         return series.map((x) => x*args[0])     // Return series * args[0]
+//       }
+//     case ''
+//   }
+// }
+
+const weeklyMultipliers = [0.92, 0.89, 0.95, 1.05, 1.18, 1.01, 1.04] ; // Mon - Sun
+const monthlyMultipliers = [1.2, 0.8, 0.6, 1.4]; // Week 1 - Week 4
+const yearlyMultipliers = [1.05, 1.1, 0.85, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 1.2, 1.1, 1.1]; // Jan - Dec
+
+const getExpectedValue = (value, renderProps, index) => {
+  const timeRange = renderProps.resultSet.loadResponse.query.timeDimensions[0].dateRange;
+  let newValue = value;
+  if(timeRange && timeRange.length)
+  {
+    var diff = new moment.duration((dt.fromISO(timeRange[1]) - dt.fromISO(timeRange[0])));
+    const days = diff.asDays();
+    console.log("DAYS", days)
+    if(days< 28)
+    {
+      newValue = value * weeklyMultipliers[index%7]
+    }
+    else if(days < 250)
+    {
+      newValue = value * monthlyMultipliers[index%4]
+    }
+    else
+      newValue = value * yearlyMultipliers[index%12]
+  }
+  return newValue;
+}
 const modifyProps = (renderProps) => {
   const newResultSet = 1;
   if(renderProps.resultSet)
@@ -175,18 +220,25 @@ const modifyProps = (renderProps) => {
     const measure = renderProps.resultSet.query().measures[0];
     const oldData = renderProps.resultSet.rawData();
     const newData = oldData.map((valueArr, index) => {
-      return { ...valueArr, "LineItems.target": oldData[index][measure] * 1.20 }
+      return { ...valueArr, 
+            "LineItems.target": oldData[index][measure] * 1.20 ,
+            "LineItems.average" : oldData[0][measure],
+            "LineItems.expected" : getExpectedValue(oldData[index][measure], renderProps, index),
+          }
     });
     // return {...renderProps, resultSet: { loadResponse : { data: {...renderProps.resultSet.loadResponse.data, newData} }}};
     _.update(renderProps,'resultSet.loadResponse.data', function(n) {
       return newData
     });
     _.update(renderProps,'resultSet.loadResponse.annotation.measures', function(n) {
-      return {...n, 'LineItems.target' : { title: 'Target', shortTitle: 'Target'}}
+      return {...n, 
+        'LineItems.target' : { title: 'Target', shortTitle: 'Target'},
+        'LineItems.average' : { title: 'Average', shortTitle: 'Average'},
+        'LineItems.expected' : { title: 'Expected', shortTitle: 'Expected'}}
     });
     console.log("measures",renderProps.resultSet.loadResponse.query.measures)
     _.update(renderProps,'resultSet.loadResponse.query.measures', function(n) {
-      return [...n , "LineItems.target"]
+      return [...n , "LineItems.target", "LineItems.average", "LineItems.expected"]
     });
     return renderProps;
   }

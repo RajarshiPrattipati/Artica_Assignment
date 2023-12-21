@@ -14,6 +14,9 @@ const HorizontalDivider = styled(Divider)`
   margin: 0;
   background: #F4F5F6;
 `
+const weeklyMultipliers = [0.92, 0.89, 0.95, 1.05, 1.18, 1.01, 1.04] ; // Mon - Sun
+const monthlyMultipliers = [0.4, 0.2, 0.1, 0.3]; // Week 1 - Week 4
+const yearlyMultipliers = [0.05, 0.1, 0.15, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.2, 0.1, 0.1]; // Jan - Dec
 
 const SeasonToName = [{name: 'Week', members: ["Today, Yesterday, This week", "This month", "Last 7 days", "Last week"]}, 
                       {name: 'Month', members: ["This quarter", "Last 30 days", "This month", "Last month", "Last quarter"]},
@@ -24,10 +27,18 @@ const operators = [ {name:'Auto', title:'Auto'}, {name:'Seasonal',title:'Seasona
 const initialWatchers = [
   {
     key: 'Target',
-    title: 'Target Title',
-    name: 'Target Name',
     operator: operators[0],
     index : 'Target',
+  },
+  {
+    key: 'Expected',
+    operator: operators[1],
+    index : 'Expected',
+  },
+  {
+    key: 'Average',
+    operator: operators[2],
+    index : 'Average',
   }
 ]
 const WatcherGroup = ({
@@ -108,6 +119,20 @@ const WatcherGroup = ({
          <span>
           {seasonName}
           </span>
+       : ''}
+       {m.operator.title === 'Static'? 
+         <span>
+          Value<Input
+          key="input"
+          placeholder="Enter Value"
+          style={{
+            width: 200,
+            marginRight: 8,
+            marginLeft: 8,
+
+          }}
+          value={""}
+          /></span>
        : ''}
         {/* <FilterInput member={m} key="filterInput" updateMethods={updateMethods}/> */}
         <div style={{ marginBottom: 12 , marginTop: 8}} key={m.index}>
