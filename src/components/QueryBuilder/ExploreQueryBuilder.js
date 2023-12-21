@@ -5,11 +5,16 @@ import styled from 'styled-components';
 import { QueryBuilder } from "@cubejs-client/react";
 import MemberGroup from "./MemberGroup";
 import FilterGroup from "./FilterGroup";
+import WatcherGroup from "./WatcherGroup";
+
 import TimeGroup from "./TimeGroup";
 import SelectChartType from './SelectChartType';
 import ChartRenderer from "../ChartRenderer";
 import stateChangeHeuristics from "./stateChangeHeuristics.js";
 
+const updateWatchers = () =>{
+
+}
 const ControlsRow = styled(Row)`
   background: #ffffff;
   margin-bottom: 12px;
@@ -43,6 +48,9 @@ const Empty = styled.div`
   text-align: center;
   margin-top: 185px;
 `
+
+
+
 
 const ExploreQueryBuilder = ({
   vizState,
@@ -121,6 +129,18 @@ const ExploreQueryBuilder = ({
                   availableMembers={availableDimensions.concat(availableMeasures)}
                   addMemberName="Filter"
                   updateMethods={updateFilters}
+                />
+              </Col>
+            </Row>
+          ])}
+           {!!measures.length && ([
+            
+            <Row type="flex" justify="space-around" align="top" gutter={24} style={{ marginTop: 10 }}>
+              <Col span={24}>
+                <WatcherGroup
+                  members={measures}
+                  addMemberName="Watchers"
+                  timeDimensions={timeDimensions}
                 />
               </Col>
             </Row>

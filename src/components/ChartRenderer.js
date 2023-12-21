@@ -184,8 +184,9 @@ const modifyProps = (renderProps) => {
     _.update(renderProps,'resultSet.loadResponse.annotation.measures', function(n) {
       return {...n, 'LineItems.target' : { title: 'Target', shortTitle: 'Target'}}
     });
+    console.log("measures",renderProps.resultSet.loadResponse.query.measures)
     _.update(renderProps,'resultSet.loadResponse.query.measures', function(n) {
-      return ["LineItems.cumulativeTotalRevenue", "LineItems.target"]
+      return [...n , "LineItems.target"]
     });
     return renderProps;
   }
